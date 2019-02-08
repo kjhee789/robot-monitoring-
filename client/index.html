@@ -1,0 +1,207 @@
+<!doctype html>
+<html >
+  <head>
+    <title>R robot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap-responsive.min.css">
+    <style>
+      body {
+        padding-top: 60px;
+      }
+      .wall{
+        background-color:dimgray;
+      }
+      .cleaned{
+        background-color:coral;
+      }
+      .cleaned_current{
+        background-color:coral;
+        background-image: url("img/robot2.png");
+        background-size:contain;
+        background-repeat:no-repeat;
+        background-position:center;
+      }
+    </style>
+    <script src="/js/angular.min.js"></script>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+ 
+  </head>
+  <body >
+    <div class="container" ng-app="mapApp" ng-controller="MapCtrl">
+      <div class="navbar navbar-fixed-top navbar-inverse">
+        <div class="navbar-inner">
+          <div class="pull-right">
+            <a href="https://c9.io" class="brand">Cloud9 IDE</a>
+          </div>
+        </div>
+      </div>
+      <div class="page-header">
+        <h1 color="white">R robot</h1>
+         <div align="right" >
+          <table class="table table-bordered" style="width:50%">
+               <thead>
+                <tr>
+                  <th>Covered</th>
+                  <th>Percentage</th>
+                  <th>Productivity</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{{cleanedSpaces}}/{{wholeSpaces}}</td>
+                  <td>{{percentage}}%</td>
+                  <td>{{productivity}}</td>
+                </tr>
+              </table> 
+       </div>
+      </div>
+     
+      <div class="row">
+        <div class="span6">
+          <h4>MAP Registration</h4>
+          <div class="row controls">
+            <form>
+              <div class="input-append span5">
+                <textarea class="span5" placeholder="Insert Map" ng-model="mapInput" rows="18">
+                </textarea>
+              </div>
+              <div class="input-append span5">
+               <input type="submit" width="100%" class="span5 btn btn-primary" value="SendMap" ng-click="sendMap();">
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="2"></div>
+        <div class="span5" >
+           <h4>Monitor</h4>
+          <table ng-table="tableMap" class="table  table-bordered">
+              <tr ng-repeat="rows in map">
+                <td ng-repeat="x in rows" ng-class="getClass($parent.$index,$index)"></td>
+              </tr>
+          </table>    
+          <input id="startBot" type="submit" width="100%" class="span5 btn btn-primary" value="StartBot" ng-click="startBot();">
+          <input id="temp" type="hidden" ng-click="temp();">
+          <input type="hidden" ng-model="curX">
+          <input type="hidden" ng-model="curY">
+          <div style="height:20px"></div>
+       </div>
+      </div>
+    </div>
+  </body>
+     <script>
+     var app= angular.module('mapApp',[]);
+     app.controller('MapCtrl',function($scope,$http,$window){
+       var interval;
+       $scope.wholeSpaces;
+       $scope.cleanedSpaces;
+       $scope.percentage;
+       $scope.productivity;
+       $scope.sendMap = function(){
+         Promise.resolve()
+         .then(function(){
+          $scope.buildMap();
+          console.log("before sending>>"+$scope.map[0][0].value);
+         
+          })
+         .then(function(){
+            return $.post('sendMap',{data:$scope.map});//request posts 
+         })
+         .then(function (paths){
+            //setInterval($scope.monitorBot,2000);
+            console.log("call sendmap>>"+paths.data[0][0].value);
+            $scope.map = paths.data;
+            $scope.wholeSpaces=paths.spaces;
+            $scope.cleanedSpaces=paths.cSpaces;
+            //for synchronizaion (data sync issue)
+            $("#temp").click();
+         });
+       }//end of $scope.sendMap
+       //////////////////////////////////////////////////////
+       //  monitoring robot by retrieving data from server
+       /////////////////////////////////////////////////////
+       $scope.monitorBot=function(){
+         Promise.resolve()
+        .then(function(){
+          return $.post('monitorBot');//request posts 
+          })
+          .then(function (paths){
+            $scope.cleanedSpaces = paths.cSpaces;
+            console.log("percentage:"+ $window.Math.round((parseFloat($scope.cleanedSpaces)/parseFloat($scope.wholeSpaces))*100));
+            $scope.percentage = $window.Math.round((parseFloat($scope.cleanedSpaces)/parseFloat($scope.wholeSpaces))*100);
+            console.log("current location(col, row)=>"+$scope.curX+","+$scope.curY);
+
+            $scope.map = paths.data;
+            $("#temp").click();
+            if(paths.msg == "complete"){ 
+              clearInterval(interval);
+             
+            }else{  
+            //last location X
+              $scope.curX = paths.curX;
+              $scope.curY = paths.curY;
+            }
+          });
+      
+        } 
+       //////////////////////////////////////////////////////
+       //  start trigering monitoring process onto server
+       /////////////////////////////////////////////////////
+        $scope.startBot = function(){
+          console.log("****"+$scope.map[0][0].value);
+          Promise.resolve()
+        .then(function(){
+          return $.post('startBot');//request posts 
+          })
+          .then(function (paths){
+             console.log("startBot return");
+             interval = setInterval($scope.monitorBot,500);
+             $("#temp").click();
+          });
+        }
+        //////////////////////////////////////////////////////
+        //  building map from user input
+        //////////////////////////////////////////////////////
+        $scope.buildMap=function(){
+          //alert("build map..");
+          var mapObj = [];
+          var rowObj = [];
+          console.log($scope.mapInput);
+          var lines = $scope.mapInput.split(/\n/);
+          
+          for(var i = 0;i<lines.length;i++){
+            //lines[0].forEach
+            rowObj = [];
+            //converting double spaces into single spaces
+            var str = lines[i].replace(/  /g,' ');
+            str.split("").forEach(function(item){
+              //alert({value:item,status:"X"});
+              rowObj.push({value:item,status:"X"})
+            });
+            mapObj.push(rowObj);
+          }//for end
+          //alert(">>"+mapObj);
+          //assign scope variable
+          $scope.map = mapObj
+          console.log(">>1"+$scope.map);
+          //alert($scope.map[0][1]);
+        }//end of buildMap
+        //////////////////////////////////////////////////////
+        //  retrieving class name of respective cell from map data 
+        //////////////////////////////////////////////////////        
+        $scope.getClass=function(row, col){
+          
+          if($scope.map[row][col].value == '#'){
+            return "wall";
+          }else if($scope.curX == col && $scope.curY == row){
+            return "cleaned_current";
+          }else if($scope.map[row][col].status == 'C'){
+            return "cleaned";
+          }
+        }//end of getClass
+         //alert($scope.map[0][1]);
+         console.log(">>2"+$scope.map);
+      });//end of controller
+    </script>
+</html>

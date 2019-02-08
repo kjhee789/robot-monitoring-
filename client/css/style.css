@@ -1,0 +1,16 @@
+  body {
+    padding-top: 60px;
+  }
+  .wall{
+    background-color:gray;
+  }
+  .cleaned{
+    background-color:coral;
+  }
+  .cleaned_current{
+    background-color:coral;
+    background-image: url("../img/robot2.png");
+    background-size:contain;
+    background-repeat:no-repeat;
+    background-position:center;
+  }
