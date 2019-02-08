@@ -63,8 +63,8 @@ router.post('/sendMap', function(req, res, next) {
     }
     wholeSpaces = cnt;
     //console.log("sendMap>>"+mapObj);
-    console.log("spaces,cnt:"+wholeSpaces+'/'+cnt);
-    console.log("sizeX,sizeY:"+sizeX+'/'+sizeY);
+    //console.log("spaces,cnt:"+wholeSpaces+'/'+cnt);
+    //console.log("sizeX,sizeY:"+sizeX+'/'+sizeY);
     res.json({data:mapObj,curX:curX,curY:curY,spaces:wholeSpaces,cSpaces:cleanedSpaces});
 });
 
@@ -107,11 +107,8 @@ function stepClean(){
     //2.four direction check (E,W,S,N) -> start first possible 
     //mapObj[curY][curX].status="C";
     mapObj[curY][curX].status="C";
-    //
-   
-    
     var fDirection = getNextCleaningDirection();
-    console.log("next Direction:"+fDirection+"/current : ["+curY+"]["+curX+"]");
+    //console.log("next Direction:"+fDirection+"/current : ["+curY+"]["+curX+"]");
     //if direction exists, save last direction and move 
     if(fDirection == _Direction.N){
       curY=curY-1;  
@@ -142,16 +139,11 @@ function stepClean(){
       default:
     }
     }
-    
-    
-    
-    
-    //mapObj[curY][curX].status="C"
+
 };
 
 function getNextCleaningDirection(){
-    console.log("~~~~~~"+curX+curY);
-    //boundary check !!
+
     //ordered in priority 
     ///////////////////////////////////////////////////////////
     //1. Right next to a uncleaned spaces
@@ -199,82 +191,9 @@ function getNextCleaningDirection(){
         if(mapObj[curY][i].value!="#" && mapObj[curY][i].status!="C")
         return _Direction.E;
     }  
-    console.log("after checking east");
-    return _Direction.X;
-    //current pop
-    /*
-    var tObj = routes.pop();
-    switch(tObj.fDirection){
-      case _Direction.N: return _Direction.S;
-      case _Direction.S: return _Direction.N;  
-      case _Direction.W: return _Direction.E;  
-      case _Direction.E: return _Direction.W;  
-      default:
-    }
-    */
-    
-    
-/*
-    for(var i=0;i<sizeY;i++){
-        for( var j=0;j<sizeX;j++){
-            
-            if(mapObj[i][j].value=='#') continue;
-            if(mapObj[i][j].status!="C"){
-                if(mapObj[curY-1][curX].value!="#" && curY-i>0){//north direction
-                    console.log("closest north !["+i+"]["+j+"]" );
-                    return _Direction.N
-                }else if(curY-i<0){
-                    console.log("closest south !["+i+"]["+j+"]" );
-                    return _Direction.S
-                }else if(curX-j>0){
-                    console.log("closest east !["+i+"]["+j+"]" );
-                    return _Direction.E;
-                }else if(curX-j<0){
-                    console.log("closest west !["+i+"]["+j+"]" );
-                    return _Direction.W;
-                }
-            }//if
-        }
-    }
-  */
-  
-    
     ///////////////////////////////////////////////////////////
-    // 3. go to the previous route 
-    /////////////////
-    
-    
-    /* 3 become suceess, delete below
-    if(mapObj[curY-1][curX].value!="#" ){
-        console.log("nnn"+curX+","+curY);
-        return _Direction.N;
-    }
-    if(mapObj[curY+1][curX].value!="#"){
-        console.log("sss"+curX+","+curY);
-        return _Direction.S;
-    }
-    if(mapObj[curY][curX-1].value!="#" ){
-        console.log("www"+curX+","+curY);
-        return _Direction.W;
-    }
-    if(mapObj[curY][curX+1].value!="#" ){
-         console.log("eee"+curX+","+curY);
-        return _Direction.E;
-    }
-*/
-    console.log("after checking east");
-    console.log("~~~~~~switch");
-   /*
-    switch(lastDir){
-          case _Direction.N: mapObj[curY-1][curX].value!="#"; return _Direction.S;
-          case _Direction.S: mapObj[curY+1][curX].value!="#"; return _Direction.N;  
-          case _Direction.W: mapObj[curY+1][curX].value!="#"; return _Direction.E;  
-          case _Direction.E: mapObj[curY+1][curX].value!="#"; return _Direction.W;  
-          default:
-      }
-    
+    //3. go to the previous location
     return _Direction.X;
-    */
 }
 function isCleaningComplete(){
    for(var i=0;i<sizeY;i++){
