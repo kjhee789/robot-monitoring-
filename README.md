@@ -9,7 +9,14 @@
 
 Welcome to your Node.js project on Cloud9 IDE!
 
-This chat example showcases how to use `socket.io` with a static `express` server.
+This monitoring program inputs a type of space surrounded by wall and a robot works on the whole open spaces for cleaning.
+The input format would be a following type of structure and be typed in the input area on the web page.
+
+
+############
+#          #
+#    #     #
+############
 
 ## Running the server
 
